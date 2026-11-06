@@ -8,11 +8,10 @@ It doesn't have switches for all options, and it's tailored for single gpu use, 
 It creates a launch command for either llama.cpp or ik_llama and scans model directories for GGUF files, parses their headers, estimates VRAM usage (it tends to overestimate context size requirements), and launches a backend server. A FastAPI backend (launcher.py) serves the UI (index.html) over
 localhost; app.py opens it in a native web-view window via pywebview.
 The GUI allows you to sort models by file or name, filter out those with multimodal support, and indicates if the model is MoE, has mtp, vision or sliding window attention. It has a search box and indicates the model quant and file size.
-If there are multiple mmproj files in the same subfolder (ie, comfyui text_encoders folder if you use ggufs), it uses a dropdown menu to pick the proper mmproj
+If there are multiple mmproj files in the same subfolder (ie, comfyui text_encoders folder if you use ggufs), it uses a dropdown menu to pick the proper mmproj.
 
 
 ## Requirements
-------------
 
 Python
   - Python 3 (3.10+ recommended). A virtual environment is created in `venv`.
@@ -47,7 +46,6 @@ Python packages
 
 
 ## Installation
-------------
 
 Linux
   ./install.sh
@@ -59,7 +57,6 @@ Both scripts create `venv/`, upgrade pip, and install the Python packages.
 
 
 ## Running
--------
 
 Linux
   ./llama-launcher.sh     (cd into the folder, activate venv, run app.py)
@@ -78,7 +75,7 @@ window at http://127.0.0.1:<port>.
 
 
 ## Configuration
--------------
+
 Input your paths for llama.cpp and ik_llama and your model folders. Do delete the provided examples. You can do that in the gui or manually in the config.json file.
 
   - model_dirs: list of directories scanned for .gguf models.
@@ -100,7 +97,7 @@ overrides.json   (created at runtime)
 
 
 ### Companion-file conventions
---------------------------
+
   The scanner groups GGUF shards (matching -NNNNN-of-MMMMM) and recognises
   companion files named with an mmproj / mtp / dflash prefix or suffix,
   optionally followed by quant/precision tags (e.g. q8_0, f16, bf16). The
@@ -108,7 +105,7 @@ overrides.json   (created at runtime)
 
 
 ### Files
------
+
   app.py                  Entry point: runs the server + opens the window.
   launcher.py             FastAPI backend + model scanning + config handling.
   gguf_read.py            GGUF header parser (metadata used for estimates).
