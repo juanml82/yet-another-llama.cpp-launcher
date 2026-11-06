@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Llama.cpp / ik_llama Launcher</title>
+<style>
+:root{--bg:#1a1b26;--sf:#24283b;--sf2:#2f3449;--bd:#414868;--tx:#c0caf5;--dim:#565f89;--ac:#7aa2f7;--ac2:#bb9af7;--grn:#9ece6a;--orn:#ff9e64;--red:#f7768e;--cyn:#7dcfff;--r:6px;--mono:"JetBrains Mono","Fira Code",monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:16px;line-height:1.5}
+.container{display:flex;gap:1px;background:var(--bd);height:100vh;overflow:hidden}
+.panel{background:var(--bg);overflow-y:auto;padding:1em}
+.left{flex:1.2;min-width:420px}.right{flex:1;min-width:380px}
+h2{font-size:1em;text-transform:uppercase;letter-spacing:.05em;color:var(--ac);margin-bottom:.75em;padding-bottom:.4em;border-bottom:1px solid var(--bd)}
+.filters{display:flex;flex-wrap:wrap;gap:.4em;margin-bottom:.6em}
+.filters select{background:var(--sf);color:var(--tx);border:1px solid var(--bd);border-radius:var(--r);padding:.25em .5em;font-size:.85em}
+.filters select:focus{outline:none;border-color:var(--ac)}
+.flbl{font-size:.75em;color:var(--dim);align-self:center}
+.tw{overflow-x:auto;border:1px solid var(--bd);border-radius:var(--r)}
+table{width:100%;border-collapse:collapse;font-size:.82em}
+thead th{background:var(--sf2);position:sticky;top:0;z-index:1;text-align:left;padding:.45em .5em;user-select:none;white-space:nowrap;border-bottom:1px solid var(--bd)}
+tbody tr{cursor:pointer;border-bottom:1px solid var(--sf2)}
+tbody tr:hover{background:var(--sf)}
+tbody tr.selected{background:var(--sf2)}
+tbody tr.selected td:first-child{border-left:3px solid var(--ac)}
+td{padding:.4em .5em;white-space:nowrap;vertical-align:middle}
+.bdg{display:inline-block;padding:.1em .4em;border-radius:3px;font-size:.75em;font-weight:600;margin-right:2px}
+.bdg-mm{background:#2e3440;color:var(--cyn)}
+.bdg-moe{background:#3b2e40;color:var(--ac2)}
+.bdg-mtp{background:#2e4035;color:var(--grn)}
+.bdg-swa{background:#3d3020;color:var(--orn)}
+.sz{color:var(--dim)}.qt{font-family:var(--mono);font-size:.9em}
+.mn{max-width:220px;overflow:hidden;text-overflow:ellipsis}
+.empty{text-align:center;padding:2em;color:var(--dim);font-style:italic}
+fieldset{border:1px solid var(--bd);border-radius:var(--r);padding:.7em .8em;margin-top:.8em}
+legend{font-size:.8em;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--ac2);padding:0 .4em}
+label{display:block;margin-top:.5em;font-size:.88em}
+label.inline{display:inline-block;margin-right:1em}
+input[type="text"],input[type="number"]{background:var(--sf);color:var(--tx);border:1px solid var(--bd);border-radius:var(--r);padding:.3em .5em;font-size:.9em;width:100%;margin-top:.2em}
+input[type="number"]{width:90px}
+input[type="text"]:focus,input[type="number"]:focus,select:focus{outline:none;border-color:var(--ac)}
+input[type="checkbox"]{accent-color:var(--ac);margin-right:.3em;vertical-align:middle}
+select{background:var(--sf);color:var(--tx);border:1px solid var(--bd);border-radius:var(--r);padding:.3em .5em;font-size:.9em;margin-top:.2em;width:100%}
+input:disabled,select:disabled{opacity:.4}
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: var(--sf);
+  color: var(--tx);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: .3em .5em;
+  font-family: inherit;
+  font-size: .9em;
+  outline: none;
+}
+.mode-toggle{display:flex;margin-top:.5em;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+.mode-toggle button{flex:1;padding:.45em 0;background:var(--sf);color:var(--dim);border:none;cursor:pointer;font-size:.85em;font-weight:600}
+.mode-toggle button.active{background:var(--ac);color:var(--bg)}
+.mode-toggle button:not(:last-child){border-right:1px solid var(--bd)}
+.preset-row{display:flex;gap:.4em;margin-top:.3em}
+.preset-row select{flex:1}
+.btn-row{display:flex;gap:.5em;margin-top:.8em;flex-wrap:wrap}
+button.primary{background:var(--ac);color:var(--bg);border:none;border-radius:var(--r);padding:.5em 1.2em;font-weight:700;font-size:.9em;cursor:pointer}
+button.primary:hover{filter:brightness(1.15)}
+button.secondary{background:var(--sf2);color:var(--tx);border:1px solid var(--bd);border-radius:var(--r);padding:.5em 1em;font-size:.85em;cursor:pointer}
+button.secondary:hover{border-color:var(--ac)}
+#out{width:100%;height:80px;margin-top:.5em;background:var(--sf);color:var(--grn);border:1px solid var(--bd);border-radius:var(--r);padding:.5em;font-family:var(--mono);font-size:.82em;resize:vertical;white-space:pre-wrap;word-break:break-all}
+#vram{margin-top:.6em;padding:.6em .8em;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);font-family:var(--mono);font-size:.8em;display:none}
+#vram .row{display:flex;justify-content:space-between;padding:.1em 0;gap:1em}
+#vram .total{border-top:1px solid var(--bd);margin-top:.3em;padding-top:.3em;font-weight:700;color:var(--ac)}
+#notes{width:100%;height:160px;background:var(--sf);color:var(--tx);border:1px solid var(--bd);border-radius:var(--r);padding:.5em;font-family:var(--mono);font-size:.82em;resize:vertical;margin-top:.3em}
+.hidden{display:none!important}
+code{background:var(--sf2);padding:.05em .3em;border-radius:3px;font-family:var(--mono);font-size:.9em}
+#ctx-menu{position:fixed;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);padding:.25em 0;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,.5);min-width:190px;font-size:.88em}
+#ctx-menu button{display:block;width:100%;text-align:left;background:transparent;border:none;color:var(--tx);padding:.45em 1em;font-size:inherit;cursor:pointer;font-family:inherit}
+#ctx-menu button:hover{background:var(--ac);color:var(--bg)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--sf2);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- LEFT -->
+<div class="panel left">
+<h2>Models</h2>
+<div class="filters">
+  <span class="flbl">Sort:</span>
+  <select id="sort-by">
+    <option value="size_desc">Size ↓</option>
+    <option value="size_asc">Size ↑</option>
+    <option value="name">Name A→Z</option>
+  </select>
+  <span class="flbl" style="margin-left:.5em">Modality:</span>
+  <select id="filter-modality">
+    <option value="all">All</option>
+    <option value="mm">Multimodal</option>
+    <option value="text">Text only</option>
+  </select>
+  <span class="flbl" style="margin-left:.5em">Search:</span>
+<input type="text" id="search" placeholder="e.g. qwen, gemma, 7b…" style="background:var(--sf);color:var(--tx);border:1px solid var(--bd);border-radius:var(--r);padding:.25em .5em;font-size:.85em;width:130px">
+</div>
+<div class="tw">
+<table>
+<thead><tr><th>Model</th><th>Flags</th><th>Quant</th><th>Size</th></tr></thead>
+<tbody id="tbody"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
+</table>
+</div>
+</div>
+
+<!-- RIGHT -->
+<div class="panel right">
+<h2>Configuration</h2>
+
+<fieldset>
+<legend>Model directories</legend>
+<textarea id="model_dirs" rows="4" spellcheck="false"
+  style="width:100%;background:var(--sf);color:var(--tx);border:1px solid var(--bd);
+         border-radius:var(--r);padding:.4em;font-family:var(--mono);font-size:.8em;resize:vertical"
+  placeholder="One path per line"></textarea>
+<div class="btn-row" style="margin-top:.4em">
+  <button class="secondary" onclick="saveModelDirs()">Save &amp; rescan</button>
+</div>
+</fieldset>
+
+<!-- BACKEND SELECTOR -->
+<label>Backend
+  <select id="backend" onchange="onBackendChange()">
+    <option value="llamacpp">llama.cpp (ggml-org)</option>
+    <option value="ik_llama">ik_llama.cpp</option>
+  </select>
+</label>
+
+<label>Binary path (build dir)
+  <input type="text" id="bin" spellcheck="false">
+</label>
+<label>Model (.gguf)
+  <input type="text" id="model" spellcheck="false" placeholder="Select from list or type path">
+</label>
+
+<!-- PRESETS -->
+<label>Preset</label>
+<div class="preset-row">
+  <select id="preset-select">
+    <option value="">— (none) —</option>
+  </select>
+  <button class="secondary" onclick="applyPresetFromSelect()" style="width:auto;white-space:nowrap">Apply</button>
+  <button class="secondary" onclick="deleteSelectedPreset()" style="width:auto;white-space:nowrap" title="Delete selected preset">🗑</button>
+</div>
+
+<label>Mode</label>
+<div class="mode-toggle">
+  <button id="mode-server" class="active" onclick="setMode('server')">Server</button>
+  <button id="mode-cli" onclick="setMode('cli')">CLI</button>
+  <button id="mode-bench" onclick="setMode('bench')">Bench</button>
+</div>
+
+<div id="server-fields">
+  <label>Host <input type="text" id="host" value="0.0.0.0"></label>
+  <label>Port <input type="number" id="port" value="8502"></label>
+</div>
+<div id="cli-fields" class="hidden">
+  <label>Prompt <input type="text" id="cli_prompt" placeholder="(empty = interactive)"></label>
+</div>
+<div id="bench-fields" class="hidden">
+  <label>Batch (-b) <input type="number" id="bench_b" value="512"></label>
+  <label>Ubatch (-ub) <input type="number" id="bench_ub" value="512"></label>
+  <label>Prompt tokens (-p) <input type="number" id="bench_p" value="512"></label>
+  <label>Gen tokens (-n) <input type="number" id="bench_n" value="128"></label>
+</div>
+
+<fieldset>
+<legend>Memory</legend>
+<label class="inline"><input type="radio" name="mem_mgmt" value="fit" checked onchange="syncMemory()"> --fit</label>
+<label class="inline"><input type="radio" name="mem_mgmt" value="cpu_moe" onchange="syncMemory()"> --cpu-moe</label>
+<label class="inline"><input type="radio" name="mem_mgmt" value="manual" onchange="syncMemory()"> --n-gpu-layers</label>
+<label id="gpu_layers_label" class="hidden">GPU layers
+  <input type="number" id="gpu_layers" value="99" min="0" max="999" oninput="refreshVram()">
+</label>
+<label id="fit_margin_label" class="hidden">Fit margin (MiB)
+  <input type="number" id="fit_margin" value="1024" min="0" step="128">
+</label>
+</fieldset>
+
+<label>Load mode
+  <select id="load_mode">
+    <option value="">Auto</option>
+    <option value="none">None</option>
+    <option value="mmap">mmap</option>
+    <option value="mlock">mlock</option>
+    <option value="mmap+mlock">mmap + mlock</option>
+    <option value="dio">DirectIO</option>
+  </select>
+</label>
+
+<fieldset id="ctx-fs">
+<legend>Context</legend>
+<label><input type="checkbox" id="use_ctx" checked onchange="syncCtx()"> Fix context (-c)</label>
+<label>Length <input type="number" id="ctx" value="32768" oninput="refreshVram()"></label>
+<label><input type="checkbox" id="ctx_q8" onchange="refreshVram()"> KV Cache Q8 (q8_0)</label>
+<label id="swa_full_label" class="hidden">
+  <input type="checkbox" id="swa_full" onchange="refreshVram()">
+  Force SWA to full context (<code>--swa-full</code>)
+</label>
+</fieldset>
+
+<fieldset id="mmproj-fs" class="hidden">
+<legend>MMProj (Vision)</legend>
+<label><input type="checkbox" id="use_mmproj" checked> Load mmproj</label>
+<label>MMProj file
+  <input type="text" id="mmproj_path" list="mmproj_datalist" onchange="refreshVram()" placeholder="Path to mmproj .gguf">
+  <datalist id="mmproj_datalist"></datalist>
+</label>
+<label>Device
+  <select id="mmproj_device" onchange="refreshVram()">
+    <option value="gpu" selected>GPU</option>
+    <option value="cpu">CPU</option>
+  </select>
+</label>
+</fieldset>
+
+<fieldset id="mtp-fs">
+<legend>Speculative (MTP / DFlash)</legend>
+
+<label class="inline"><input type="checkbox" id="use_mtp"> Enable MTP</label>
+<div id="mtp-details" class="hidden" style="margin-top:.3em">
+  <label>Source
+    <select id="mtp_source" onchange="syncMtp()">
+      <option value="embedded">Embedded in model (nextn head)</option>
+      <option value="external">External file (.gguf)</option>
+    </select>
+  </label>
+  <div id="mtp-external" class="hidden">
+    <label>MTP file
+      <input type="text" id="mtp_path" list="mtp_datalist" onchange="refreshVram()" placeholder="Path to MTP .gguf file">
+      <datalist id="mtp_datalist"></datalist>
+    </label>
+    <button class="secondary" onclick="saveMtpPath()" style="margin-top:.3em;width:auto;padding:.2em .8em;font-size:.75em">💾 Persist path</button>
+  </div>
+  <label class="inline">n-max <input type="number" id="mtp_nmax" min="1" max="16" value="4" style="width:60px"></label>
+  <label class="inline">p-min <input type="number" id="mtp_pmin" step="0.01" min="0" max="1" value="0.0" style="width:60px"></label>
+  <label class="inline"><input type="checkbox" id="mtp_cpu"> Load draft on CPU (<code>--spec-draft-cpu-moe</code>)</label>
+</div>
+
+<label class="inline" style="margin-top:.6em"><input type="checkbox" id="use_dflash"> Enable DFlash</label>
+<div id="dflash-details" class="hidden" style="margin-top:.3em">
+  <label>DFlash file
+    <input type="text" id="dflash_path" list="dflash_datalist" onchange="refreshVram()" placeholder="Path to DFlash .gguf file">
+    <datalist id="dflash_datalist"></datalist>
+  </label>
+  <label class="inline">n-max <input type="number" id="dflash_nmax" min="1" max="32" value="15" style="width:60px"></label>
+  <label class="inline"><input type="checkbox" id="dflash_ngl_all" checked> All draft layers on GPU (<code>--spec-draft-ngl all</code>)</label>
+</div>
+</fieldset>
+
+<fieldset id="sampling-fs">
+<legend>Sampling
+  <button class="secondary" style="padding:.05em .5em;font-size:.72em;margin-left:.5em;font-weight:400;text-transform:none;letter-spacing:0"
+          onclick="toggleSamplingAll()" title="Check or uncheck all options">All/None</button>
+</legend>
+
+<label class="inline">
+  <input type="checkbox" class="samp-chk" data-target="temp" checked>
+  Temp <input type="number" id="temp" step="0.1" min="0" max="5" value="1.0" style="width:60px">
+</label>
+<label class="inline">
+  <input type="checkbox" class="samp-chk" data-target="topk" checked>
+  Top-K <input type="number" id="topk" min="0" value="40" style="width:60px">
+</label>
+<label class="inline">
+  <input type="checkbox" class="samp-chk" data-target="topp" checked>
+  Top-P <input type="number" id="topp" step="0.01" min="0" max="1" value="0.95" style="width:60px">
+</label>
+<label class="inline">
+  <input type="checkbox" class="samp-chk" data-target="presence">
+  Presence pen. <input type="number" id="presence" step="0.1" value="0.0" style="width:60px">
+</label>
+<label class="inline">
+  <input type="checkbox" class="samp-chk" data-target="repeat_pen">
+  Repeat pen. <input type="number" id="repeat_pen" step="0.1" value="1.1" style="width:60px">
+</label>
+<label>
+  <input type="checkbox" class="samp-chk" data-target="reasoning_budget">
+  Reasoning budget <input type="number" id="reasoning_budget" min="0" value="0" style="width:90px">
+</label>
+<div id="re-wrap">
+<label>
+  <input type="checkbox" class="samp-chk" data-target="reasoning_effort" checked>
+  Reasoning effort
+  <select id="reasoning_effort">
+    <option value="">(auto)</option>
+    <option value="low">low</option>
+    <option value="medium">medium</option>
+    <option value="high">high</option>
+  </select>
+</label>
+</div>
+</fieldset>
+
+<fieldset id="ik_llama_fs" class="hidden">
+<legend>Advanced (ik_llama.cpp)</legend>
+
+<label class="inline">
+  <input type="checkbox" id="rtr">
+  <code>-rtr</code> Run-time repack
+  <span style="color:var(--dim);font-size:.85em">(improves IQ*_R4, +RAM and +load time)</span>
+</label>
+
+<label style="margin-top:.6em">
+  MLA (<code>-mla</code>)
+  <select id="mla">
+    <option value="0">0 — standard</option>
+    <option value="1">1 — K + V^T</option>
+    <option value="2">2 — K only</option>
+    <option value="3" selected>3 — auto (default)</option>
+  </select>
+</label>
+
+<label>Attention max batch (<code>-amb</code>, MB)
+  <input type="number" id="amb" value="256" min="0" step="64">
+  <span style="color:var(--dim);font-size:.85em">(default 256; raise if you have spare VRAM)</span>
+</label>
+
+<label style="margin-top:.6em">
+  <input type="checkbox" id="use_dple">
+  <code>-dple</code> Defer per-layer token embedding (PLE)
+  <span style="color:var(--dim);font-size:.85em">(Qwen3.8-Flash-Next: avoids keeping PLE in RAM)</span>
+</label>
+
+<label style="margin-top:.6em">
+  <input type="checkbox" id="jinja">
+  <code>--jinja</code> Enable Jinja template rendering
+</label>
+</fieldset>
+
+<fieldset>
+<legend>Flags</legend>
+<div id="llamacpp-flags-wrap">
+  <label class="inline"><input type="checkbox" id="lv4" checked> -lv 4</label>
+  <label class="inline">
+    <input type="checkbox" id="moe_cache_chk">
+    --moe-cache-mib
+  </label>
+  <input type="number" id="moe_cache_mib" min="0" step="64" value="0"
+         placeholder="MiB" style="width:80px;display:inline-block;margin-left:.3em;margin-top:0" disabled>
+</div>
+<label class="inline"><input type="checkbox" id="mcp_proxy"> --ui-mcp-proxy</label>
+</fieldset>
+
+<label>Extra parameters
+  <input type="text" id="extra_params" placeholder="--tensor-split 0,100 --cache-reuse 256 …">
+</label>
+
+<div id="vram"></div>
+
+<div class="btn-row">
+  <button class="primary" onclick="generate()">⚡ Generate</button>
+  <button class="secondary" onclick="copyCmd()">Copy</button>
+  <button class="secondary" onclick="savePreset()">💾 Save preset</button>
+</div>
+<textarea id="out" readonly></textarea>
+
+<label>Notes</label>
+<textarea id="notes" oninput="localStorage.setItem('llama_notes',this.value)" placeholder="Annotations, paths, configs…"></textarea>
+</div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu" class="hidden">
+  <button onclick="ctxCopy()">📋 Copy command</button>
+  <button onclick="ctxSelectAll()">Select all</button>
+</div>
+
+<script>
+// ── Backend capability map ──
+const BACKEND_CAPS = {
+  llamacpp: {
+    label: 'llama.cpp',
+    bin_default: '/home/juan/llama.cpp/build/bin',
+    port_default: 8502,
+    exe: { server: 'llama-server', cli: 'llama-cli', bench: 'llama-bench' },
+    flags: {
+      fit_margin: false,
+      mla: false,
+      amb: false,
+      rtr: false,
+      mtp_syntax: 'legacy',
+      dple: false,
+      lv4: true,
+      reasoning_effort: true,
+      moe_cache_mib: true,
+      jinja: false,
+    }
+  },
+  ik_llama: {
+    label: 'ik_llama.cpp',
+    bin_default: '/home/juan/ik_llama.cpp/build/bin',
+    port_default: 8507,
+    exe: { server: 'llama-server', cli: 'llama-cli', bench: 'llama-bench' },
+    flags: {
+      fit_margin: true,
+      mla: true,
+      amb: true,
+      rtr: true,
+      dple: true,
+      mtp_syntax: 'unified',
+      ngl_short: true,
+      lv4: false,
+      reasoning_effort: false,
+      moe_cache_mib: false,
+      jinja: true,
+    }
+  }
+};
+
+let _binCache = {};
+let _portCache = {};
+
+let MODELS=[],SEL=null,MODE='server',PRESETS=[];
+let _rendered=[];
+
+window.addEventListener('DOMContentLoaded',async()=>{
+  const n=localStorage.getItem('llama_notes');if(n)document.getElementById('notes').value=n;
+  await Promise.allSettled([loadConfig(), loadModels(), loadPresets()]);
+  const savedBackend = localStorage.getItem('llama_backend') || 'llamacpp';
+  document.getElementById('backend').value = savedBackend;
+  initBackend(savedBackend);
+  syncMemory();syncCtx();setMode('server');
+  syncMtp();syncDflash();syncSampling();
+});
+
+// ── BACKEND ──
+function initBackend(name){
+  const caps = BACKEND_CAPS[name];
+  if(!caps) return;
+  document.getElementById('bin').value =
+    _binCache[name] || localStorage.getItem('llama_bin_'+name) || caps.bin_default;
+  document.getElementById('port').value =
+    _portCache[name] || localStorage.getItem('llama_port_'+name) || caps.port_default;
+  document.getElementById('backend').dataset.current = name;
+  applyBackendVisibility(name);
+}
+
+function applyBackendVisibility(name){
+  const caps = BACKEND_CAPS[name].flags;
+  document.getElementById('fit_margin_label').classList.toggle('hidden', !caps.fit_margin);
+  const anyIk = caps.rtr || caps.dple || caps.mla || caps.amb || caps.jinja;
+  document.getElementById('ik_llama_fs').classList.toggle('hidden', !anyIk);
+
+  // llama.cpp-specific flags: -lv 4, --moe-cache-mib
+  document.getElementById('llamacpp-flags-wrap').style.display = caps.lv4 ? '' : 'none';
+
+  // --reasoning-effort (in sampling section)
+  document.getElementById('re-wrap').style.display = caps.reasoning_effort ? '' : 'none';
+
+  // moe-cache-mib checkbox enable/disable
+  const moeChk = document.getElementById('moe_cache_chk');
+  const moeVal = document.getElementById('moe_cache_mib');
+  moeChk.checked = false;
+  moeVal.disabled = true;
+}
+
+function onBackendChange(){
+  const prev = document.getElementById('backend').dataset.current || 'llamacpp';
+  const next = document.getElementById('backend').value;
+  _binCache[prev]  = document.getElementById('bin').value;
+  _portCache[prev] = document.getElementById('port').value;
+  localStorage.setItem('llama_bin_'+prev,  _binCache[prev]);
+  localStorage.setItem('llama_port_'+prev, _portCache[prev]);
+  initBackend(next);
+  localStorage.setItem('llama_backend', next);
+}
+
+// moe-cache-mib checkbox toggle
+document.getElementById('moe_cache_chk').addEventListener('change', e => {
+  document.getElementById('moe_cache_mib').disabled = !e.target.checked;
+});
+
+// ── MODELS ──
+async function loadModels(){
+  try{const r=await fetch('/api/models');MODELS=await r.json();}
+  catch(e){document.getElementById('tbody').innerHTML=`<tr><td colspan="4" class="empty">Error: ${esc(e.message)}</td></tr>`;return;}
+  renderTable();
+}
+
+function filtered(){
+  let l=[...MODELS];
+  const fm=document.getElementById('filter-modality').value;
+  if(fm==='mm')l=l.filter(m=>m.multimodal);
+  if(fm==='text')l=l.filter(m=>!m.multimodal);
+  const sb=document.getElementById('sort-by').value;
+  switch(sb){
+    case'size_desc':l.sort((a,b)=>b.file_size-a.file_size);break;
+    case'size_asc':l.sort((a,b)=>a.file_size-b.file_size);break;
+    case'name':l.sort((a,b)=>a.name.localeCompare(b.name));break;
+  }
+  const q=document.getElementById('search').value.toLowerCase().trim();
+  if(q)l=l.filter(m=>m.name.toLowerCase().includes(q));
+  return l;
+}
+
+function iec(b){if(b>=1024**3)return(b/1024**3).toFixed(1)+' GiB';if(b>=1024**2)return(b/1024**2).toFixed(0)+' MiB';return b+' B';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function renderTable(){
+  _rendered=filtered();
+  const tb=document.getElementById('tbody');
+  if(!_rendered.length){tb.innerHTML='<tr><td colspan="4" class="empty">No matching models.</td></tr>';return;}
+  tb.innerHTML=_rendered.map((m,i)=>{
+    let fl='';
+    if(m.multimodal)fl+='<span class="bdg bdg-mm">MM</span>';
+    if(m.is_moe)fl+='<span class="bdg bdg-moe">MoE</span>';
+    if(m.has_embedded_mtp)fl+='<span class="bdg bdg-mtp">MTP✓</span>';
+    if(m.has_swa)fl+='<span class="bdg bdg-swa">SWA</span>';
+    const sel=(SEL&&m.path===SEL.path)?' selected':'';
+    return`<tr class="${sel}" onclick="pickModel(${i})">
+      <td class="mn" title="${esc(m.name)}">${esc(m.name)}</td>
+      <td>${fl||'—'}</td>
+      <td class="qt">${esc(m.quant)||'—'}</td>
+      <td class="sz">${iec(m.file_size)}</td>
+    </tr>`;
+  }).join('');
+}
+
+['sort-by','filter-modality'].forEach(id=>
+  document.getElementById(id).addEventListener('change',renderTable));
+document.getElementById('search').addEventListener('input',renderTable);
+
+// ── COMPANION SELECTS (now datalists) ──
+function populateCompanionDatalist(datalistId, inputId, paths, selectedPath) {
+  const dl = document.getElementById(datalistId);
+  const inp = document.getElementById(inputId);
+  if (!dl || !inp) return;
+  dl.innerHTML = '';
+  if (!paths || paths.length === 0) {
+    if (selectedPath) inp.value = selectedPath;
+    return;
+  }
+  for (const p of paths) {
+    const opt = document.createElement('option');
+    opt.value = p;
+    opt.label = p.split('/').pop();
+    dl.appendChild(opt);
+  }
+  if (selectedPath) {
+    inp.value = selectedPath;
+  } else {
+    inp.value = paths[0];
+  }
+}
+
+// ── SELECT MODEL ──
+function pickModel(i){
+  const m=_rendered[i];if(!m)return;
+  SEL=m;renderTable();
+  document.getElementById('model').value=m.path;
+
+  // SWA
+  const swaLbl=document.getElementById('swa_full_label');
+  const swaChk=document.getElementById('swa_full');
+  if(m.has_swa){
+    swaLbl.classList.remove('hidden');
+    swaLbl.title=`Sliding window of ${m.swa_window} tokens (${m.arch})`;
+    swaChk.checked=false;
+  }else{
+    swaLbl.classList.add('hidden');
+    swaLbl.title='';
+    swaChk.checked=false;
+  }
+
+  // MMProj
+  const mmFs=document.getElementById('mmproj-fs');
+  if(m.multimodal){
+    mmFs.classList.remove('hidden');
+    populateCompanionDatalist('mmproj_datalist', 'mmproj_path', m.mmproj_paths, m.mmproj_path);
+    document.getElementById('use_mmproj').checked=true;
+  }else{
+    mmFs.classList.add('hidden');
+    document.getElementById('use_mmproj').checked=false;
+  }
+
+  // MTP
+  document.getElementById('use_mtp').checked=m.mtp||m.has_embedded_mtp;
+  if(m.has_embedded_mtp){
+    document.getElementById('mtp_source').value='embedded';
+  }else if(m.mtp){
+    document.getElementById('mtp_source').value='external';
+  }
+  populateCompanionDatalist('mtp_datalist', 'mtp_path', m.mtp_paths, m.mtp_path);
+  syncMtp();
+
+  // DFlash
+  document.getElementById('use_dflash').checked=m.dflash;
+  populateCompanionDatalist('dflash_datalist', 'dflash_path', m.dflash_paths, m.dflash_path);
+  syncDflash();
+
+  autoApplyPreset(m.name);
+  refreshVram();
+}
+
+// ── SAVE MTP PATH (persists via API) ──
+async function saveMtpPath(){
+  if(!SEL) return alert('Select a model first.');
+  const path = document.getElementById('mtp_path').value.trim();
+  if(!path) return;
+  try{
+    const r = await fetch(`/api/models/${encodeURIComponent(SEL.name)}/paths`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({mtp_path: path})
+    });
+    const d = await r.json();
+    if(d.ok){
+      alert('MTP path saved. Will persist across rescans.');
+    } else {
+      alert('Error: ' + (d.error || 'unknown'));
+    }
+  }catch(e){
+    alert('Failed to save: ' + e.message);
+  }
+}
+
+// ── MODE ──
+function setMode(m){
+  MODE=m;
+  ['server','cli','bench'].forEach(x=>{
+    document.getElementById('mode-'+x).classList.toggle('active',x===m);
+    document.getElementById(x+'-fields').classList.toggle('hidden',x!==m);
+  });
+  document.getElementById('sampling-fs').classList.toggle('hidden',m==='bench');
+}
+
+// ── MEMORY ──
+function syncMemory(){
+  const v=document.querySelector('input[name="mem_mgmt"]:checked').value;
+  document.getElementById('gpu_layers_label').classList.toggle('hidden',v!=='manual');
+  refreshVram();
+}
+
+// ── CONTEXT ──
+function syncCtx(){
+  const on=document.getElementById('use_ctx').checked;
+  document.getElementById('ctx').disabled=!on;
+  document.getElementById('ctx_q8').disabled=!on;
+  refreshVram();
+}
+
+// ── MTP / DFLASH / SAMPLING ──
+function syncMtp(){
+  const on=document.getElementById('use_mtp').checked;
+  document.getElementById('mtp-details').classList.toggle('hidden',!on);
+  const src=document.getElementById('mtp_source').value;
+  document.getElementById('mtp-external').classList.toggle('hidden',src!=='external');
+  refreshVram();
+}
+function syncDflash(){
+  const on=document.getElementById('use_dflash').checked;
+  document.getElementById('dflash-details').classList.toggle('hidden',!on);
+  refreshVram();
+}
+function syncSampling(){
+  document.querySelectorAll('.samp-chk').forEach(chk=>{
+    const el = document.getElementById(chk.dataset.target);
+    if(el) el.disabled = !chk.checked;
+  });
+}
+function toggleSamplingAll(){
+  const chks = document.querySelectorAll('.samp-chk');
+  const anyUnchecked = [...chks].some(c=>!c.checked);
+  chks.forEach(c=>c.checked = anyUnchecked);
+  syncSampling();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('use_mtp').addEventListener('change',syncMtp);
+  document.getElementById('mtp_source').addEventListener('change',syncMtp);
+  document.getElementById('use_dflash').addEventListener('change',syncDflash);
+  document.querySelectorAll('.samp-chk').forEach(chk=>{
+    chk.addEventListener('change', syncSampling);
+  });
+});
+
+// -- LOAD CONFIG --
+
+async function loadConfig(){
+  try{
+    const r = await fetch('/api/config', {cache: 'no-store'});
+    if(!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText}`);
+    const cfg = await r.json();
+    console.log('[loadConfig] model_dirs:', cfg.model_dirs);
+    document.getElementById('model_dirs').value = (cfg.model_dirs || []).join('\n');
+    if(cfg.backends){
+      for(const [name, b] of Object.entries(cfg.backends)){
+        if(b.bin && !localStorage.getItem('llama_bin_'+name))
+          localStorage.setItem('llama_bin_'+name, b.bin);
+        if(b.port && !localStorage.getItem('llama_port_'+name))
+          localStorage.setItem('llama_port_'+name, String(b.port));
+      }
+    }
+  }catch(e){
+    console.error('[loadConfig] error:', e);
+  }
+}
+
+async function saveModelDirs(){
+  const dirs = document.getElementById('model_dirs').value
+    .split('\n').map(s => s.trim()).filter(Boolean);
+  const r = await fetch('/api/config', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({model_dirs: dirs})
+  });
+  const d = await r.json();
+  await loadModels();
+  console.log(`Rescan: ${d.count} models`);
+}
+
+// ── VRAM ──
+async function refreshVram(){
+  const c=document.getElementById('vram');
+  if(!SEL){c.style.display='none';return;}
+  const mv=document.querySelector('input[name="mem_mgmt"]:checked').value;
+  if(mv!=='manual'){
+    c.style.display='block';
+    c.innerHTML='<div class="row"><span style="color:var(--dim)">Select "--n-gpu-layers" to see the estimate.</span></div>';
+    return;
+  }
+  const ngl=parseInt(document.getElementById('gpu_layers').value)||0;
+  const ctx=document.getElementById('use_ctx').checked?(parseInt(document.getElementById('ctx').value)||0):0;
+  const q8=document.getElementById('ctx_q8').checked;
+  const swaFull=document.getElementById('swa_full').checked;
+  const mmFs=document.getElementById('mmproj-fs');
+  const uMM=!mmFs.classList.contains('hidden')&&document.getElementById('use_mmproj').checked;
+  const mmP=document.getElementById('mmproj_path').value.trim();
+  const mmG=document.getElementById('mmproj_device').value==='gpu';
+  const uMtp=document.getElementById('use_mtp').checked;
+  const mtpSrc=document.getElementById('mtp_source').value;
+  const mtpPath=(uMtp&&mtpSrc==='external')?document.getElementById('mtp_path').value.trim():'';
+  const uDf=document.getElementById('use_dflash').checked;
+  const dfPath=uDf?document.getElementById('dflash_path').value.trim():'';
+
+  try{
+    const r=await fetch('/api/estimate',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model_path:SEL.path,n_gpu_layers:ngl,ctx,ctx_quant_q8:q8,
+        swa_full:swaFull,
+        mmproj_path:(uMM&&mmG)?mmP:'',
+        mtp_path:mtpPath,
+        dflash_path:dfPath})});
+    const d=await r.json();
+    if(d.error){c.style.display='block';c.innerHTML=`<div class="row"><span style="color:var(--red)">${esc(d.error)}</span></div>`;return;}
+    const moeTag = d.is_moe
+      ? ` · <span style="color:var(--ac2)">MoE ${d.n_expert}×${d.n_expert_used}</span>`
+      : ' · dense';
+    const ftTag = d.file_type_name ? ` · ${esc(d.file_type_name)}` : '';
+    const mtpTag = d.has_embedded_mtp ? ' · <span style="color:var(--grn)">MTP✓</span>' : '';
+    const swaTag = d.has_swa
+      ? ` · <span style="color:var(--orn)">SWA ${d.n_swa_layers}/${d.n_layer} @ ${d.swa_window}${swaFull?' (full)':''}</span>`
+      : '';
+    c.style.display='block';
+    c.innerHTML=`<div class="row">
+      <span>${esc(d.arch)} · ${d.n_layer}L · dim ${d.n_embd}${moeTag}${ftTag}${mtpTag}${swaTag}</span>
+      <span>${d.layers_on_gpu}/${d.n_layer} GPU</span>
+    </div>
+    <div class="row"><span>Weights</span><span>${d.weights_gib} GiB</span></div>
+    <div class="row"><span>KV cache</span><span>${d.kv_gib} GiB</span></div>
+    ${d.mmproj_gib>0?`<div class="row"><span>MMProj</span><span>${d.mmproj_gib} GiB</span></div>`:''}
+    ${d.mtp_gib>0?`<div class="row"><span>MTP draft</span><span>${d.mtp_gib} GiB</span></div>`:''}
+    ${d.dflash_gib>0?`<div class="row"><span>DFlash draft</span><span>${d.dflash_gib} GiB</span></div>`:''}
+    <div class="row total"><span>Total ≈</span><span>${d.total_gib} GiB</span></div>`;
+  }catch(e){c.style.display='block';c.innerHTML=`<div class="row"><span style="color:var(--red)">${esc(e.message)}</span></div>`;}
+}
+
+// ── PRESETS ──
+async function loadPresets(){
+  try{const r=await fetch('/api/presets');PRESETS=await r.json();}catch{PRESETS=[];}
+  populatePresetSelect();
+}
+
+function populatePresetSelect(){
+  const sel=document.getElementById('preset-select');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— (none) —</option>'+
+    PRESETS.map(p=>`<option value="${esc(p.name)}" ${cur===p.name?'selected':''}>${esc(p.name)} <small>[${esc(p.glob)}]</small></option>`).join('');
+}
+
+function applyPresetFromSelect(){
+  const name=document.getElementById('preset-select').value;
+  if(!name)return;
+  const p=PRESETS.find(x=>x.name===name);
+  if(p)applyParams(p);
+}
+
+async function deleteSelectedPreset(){
+  const name=document.getElementById('preset-select').value;
+  if(!name)return;
+  if(!confirm(`Delete preset "${name}"?`))return;
+  await fetch('/api/presets/'+encodeURIComponent(name),{method:'DELETE'});
+  await loadPresets();
+}
+
+function autoApplyPreset(modelName){
+  const l=modelName.toLowerCase();
+  const m=PRESETS.find(p=>fnmatch(p.glob,l));
+  if(m){
+    document.getElementById('preset-select').value=m.name;
+    applyParams(m);
+  }else{
+    document.getElementById('preset-select').value='';
+  }
+}
+
+function applyParams(preset){
+  const p = preset.params; if(!p) return;
+
+  if(p.sampling && typeof p.sampling === 'object'){
+    Object.entries(p.sampling).forEach(([id, cfg])=>{
+      const el = document.getElementById(id);
+      const chk = document.querySelector(`.samp-chk[data-target="${id}"]`);
+      if(!el || !chk || !cfg) return;
+      chk.checked = !!cfg.on;
+      if(cfg.v !== null && cfg.v !== undefined) el.value = cfg.v;
+    });
+    syncSampling();
+  } else {
+    const legacy = ['temp','topk','topp','presence_penalty','repeat_penalty',
+                    'reasoning_budget','reasoning_effort'];
+    legacy.forEach(k=>{
+      if(p[k]==null) return;
+      const idMap = {
+        presence_penalty: 'presence',
+        repeat_penalty:   'repeat_pen',
+      };
+      const id = idMap[k] || k;
+      const el = document.getElementById(id);
+      const chk = document.querySelector(`.samp-chk[data-target="${id}"]`);
+      if(el){ el.value = p[k]; if(chk) chk.checked = true; }
+    });
+    syncSampling();
+  }
+
+  if(p.ctx!=null){document.getElementById('use_ctx').checked=true;document.getElementById('ctx').value=p.ctx;syncCtx();}
+  if(p.extra_params)document.getElementById('extra_params').value=p.extra_params;
+  if(p.mem_mgmt){const r=document.querySelector(`input[name="mem_mgmt"][value="${p.mem_mgmt}"]`);if(r){r.checked=true;syncMemory();}}
+  if(p.load_mode!=null)document.getElementById('load_mode').value=p.load_mode;
+}
+
+function fnmatch(pat,str){
+  const re=pat.replace(/[.+^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*').replace(/\?/g,'.');
+  return new RegExp('^'+re+'$','i').test(str);
+}
+
+function savePreset(){
+  const name=prompt('Preset name:');if(!name)return;
+  const glob=prompt('Glob for auto-link (e.g. *qwen3*):','*')||'*';
+  const params={};
+
+  params.sampling = {};
+  ['temp','topk','topp','presence','repeat_pen','reasoning_budget','reasoning_effort'].forEach(id=>{
+    const el = document.getElementById(id);
+    const chk = document.querySelector(`.samp-chk[data-target="${id}"]`);
+    if(!el || !chk) return;
+    let v;
+    if(el.tagName==='SELECT') v = el.value;
+    else {
+      const raw = el.value.trim();
+      v = raw==='' ? null : (isNaN(raw) ? raw : Number(raw));
+    }
+    params.sampling[id] = {on: chk.checked, v};
+  });
+
+  [['ctx','ctx'],['extra_params','extra_params']].forEach(([id,k])=>{
+    const el = document.getElementById(id);if(!el)return;
+    const v=el.value.trim();
+    if(v!=='')params[k]=isNaN(v)?v:Number(v);
+  });
+  const mm=document.querySelector('input[name="mem_mgmt"]:checked').value;params.mem_mgmt=mm;
+  const lm=document.getElementById('load_mode').value;if(lm)params.load_mode=lm;
+
+  fetch('/api/presets',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name,glob,params})}).then(()=>loadPresets());
+}
+
+// ── GENERATE ──
+function generate(){
+  const backend = document.getElementById('backend').value;
+  const caps = BACKEND_CAPS[backend];
+  const bin = document.getElementById('bin').value.trim();
+  const exe = caps.exe[MODE];
+  const model = document.getElementById('model').value.trim();
+
+  // Quote a path only if it contains characters a shell would split on
+  // (whitespace or double quotes), so "My Models/ggg.gguf" stays one token.
+  const q = p => /[^\S"]/.test(p)
+    ? '"' + String(p).replace(/"/g, '\\"') + '"'
+    : (String(p).includes('"') ? '"' + String(p).replace(/"/g, '\\"') + '"' : p);
+
+  // ── Part 1: model loading flags ──
+  const loadFlags = [];
+
+  // MMProj
+  const mmFs = document.getElementById('mmproj-fs');
+  const uMM = !mmFs.classList.contains('hidden')
+              && document.getElementById('use_mmproj').checked;
+  const mmPath = uMM ? document.getElementById('mmproj_path').value.trim() : '';
+  if (mmPath) loadFlags.push(`--mmproj ${q(mmPath)}`);
+
+  // Draft model: MTP external or DFlash (single -md)
+  const uMtp = document.getElementById('use_mtp').checked;
+  const uDf = document.getElementById('use_dflash').checked;
+  const mtpSrc = document.getElementById('mtp_source').value;
+  const mtpDraftPath = (uMtp && mtpSrc === 'external')
+    ? document.getElementById('mtp_path').value.trim() : '';
+  const dfDraftPath = uDf
+    ? document.getElementById('dflash_path').value.trim() : '';
+  const draftPath = dfDraftPath || mtpDraftPath;
+  if (draftPath) loadFlags.push(`-md ${q(draftPath)}`);
+
+  // ── Part 2: command, with -m and loadFlags first ──
+  // Cross-platform: pick separator based on detected backslashes, strip trailing slashes,
+  // then let q() quote the final executable path safely.
+  const sep = /[\\]/.test(bin) ? '\\' : '/';
+  const exePath = `${bin.replace(/\/+$/, '')}${sep}${exe}`;
+  const cmd = [q(exePath), `-m ${q(model)}`, ...loadFlags];
+
+  // Server / CLI / Bench
+  if(MODE==='server'){
+    cmd.push(`--host ${document.getElementById('host').value}`);
+    cmd.push(`--port ${document.getElementById('port').value}`);
+  }
+  if(MODE==='bench'){
+    cmd.push(`-b ${document.getElementById('bench_b').value}`);
+    cmd.push(`-ub ${document.getElementById('bench_ub').value}`);
+    cmd.push(`-p ${document.getElementById('bench_p').value}`);
+    cmd.push(`-n ${document.getElementById('bench_n').value}`);
+  }
+  if(MODE==='cli'){
+    const pr=document.getElementById('cli_prompt').value.trim();
+    if(pr)cmd.push(`-p "${pr}"`);
+  }
+
+  // Context
+  if(MODE!=='bench'&&document.getElementById('use_ctx').checked){
+    cmd.push(`-c ${document.getElementById('ctx').value}`);
+    if(document.getElementById('ctx_q8').checked)cmd.push('--cache-type-k q8_0 --cache-type-v q8_0');
+    if(document.getElementById('swa_full').checked)cmd.push('--swa-full');
+  }
+
+  // Memory
+  const mem = document.querySelector('input[name="mem_mgmt"]:checked').value;
+  if (mem === 'fit') {
+    cmd.push(backend === 'ik_llama' ? '--fit' : '-fit on');
+    if (caps.flags.fit_margin) {
+      const fm = document.getElementById('fit_margin').value;
+      if (fm && fm !== '1024') cmd.push(`--fit-margin ${fm}`);
+    }
+  }
+  if (mem === 'cpu_moe') cmd.push('--cpu-moe');
+  if (mem === 'manual') {
+    const ngl = document.getElementById('gpu_layers').value;
+    cmd.push(caps.flags.ngl_short ? `-ngl ${ngl}` : `--n-gpu-layers ${ngl}`);
+  }
+
+  // llama.cpp specific: --moe-cache-mib
+  if (caps.flags.moe_cache_mib && document.getElementById('moe_cache_chk').checked) {
+    const moeVal = parseInt(document.getElementById('moe_cache_mib').value) || 0;
+    if (moeVal > 0) cmd.push(`--moe-cache-mib ${moeVal}`);
+  }
+
+  // ik_llama specific flags
+  if(caps.flags.rtr && document.getElementById('rtr').checked)cmd.push('-rtr');
+  if(caps.flags.mla){
+    const mla=document.getElementById('mla').value;
+    if(mla && mla!=='3')cmd.push(`-mla ${mla}`);
+  }
+  if(caps.flags.amb){
+    const amb=document.getElementById('amb').value;
+    if(amb && amb!=='256')cmd.push(`-amb ${amb}`);
+  }
+  if(caps.flags.dple && document.getElementById('use_dple').checked){
+    cmd.push('-dple');
+  }
+  if(caps.flags.jinja && document.getElementById('jinja').checked){
+    cmd.push('--jinja');
+  }
+
+  // Load mode
+  const lm=document.getElementById('load_mode').value;if(lm)cmd.push(`--load-mode ${lm}`);
+
+  // MMProj device hint (only if mmproj on CPU)
+  if (mmPath && document.getElementById('mmproj_device').value === 'cpu') {
+    cmd.push('--no-mmproj-offload');
+  }
+
+  // MTP flags (no -md, already in loadFlags)
+  if (uMtp) {
+    const nmax = document.getElementById('mtp_nmax').value;
+    const pmin = document.getElementById('mtp_pmin').value || '0.0';
+    if (backend === 'ik_llama') {
+      cmd.push(`--spec-type mtp:n_max=${nmax},p_min=${pmin}`);
+      if (document.getElementById('mtp_cpu').checked) cmd.push('--spec-draft-cpu-moe');
+    } else {
+      if (mtpSrc === 'embedded') {
+        cmd.push(`--spec-type draft-mtp`);
+      } else {
+        cmd.push(`--spec-type draft-mtp --spec-draft-n-max ${nmax}`);
+        if (document.getElementById('mtp_cpu').checked) cmd.push('--spec-draft-cpu-moe');
+      }
+    }
+  }
+
+  // DFlash flags (no -md, already in loadFlags)
+  if (uDf) {
+    const dmax = document.getElementById('dflash_nmax').value;
+    cmd.push(`--spec-type draft-dflash --spec-draft-n-max ${dmax}`);
+    if (document.getElementById('dflash_ngl_all').checked) cmd.push('--spec-draft-ngl all');
+  }
+
+  // Sampling
+  if(MODE !== 'bench'){
+    const on = id => document.querySelector(`.samp-chk[data-target="${id}"]`)?.checked ?? false;
+    if(on('temp')){const v=document.getElementById('temp').value;if(v!=='')cmd.push(`--temp ${v}`);}
+    if(on('topk')){const v=document.getElementById('topk').value;if(v!=='')cmd.push(`--top-k ${v}`);}
+    if(on('topp')){const v=document.getElementById('topp').value;if(v!=='')cmd.push(`--top-p ${v}`);}
+    if(on('presence')){const v=document.getElementById('presence').value;if(v!=='')cmd.push(`--presence-penalty ${v}`);}
+    if(on('repeat_pen')){const v=document.getElementById('repeat_pen').value;if(v!=='')cmd.push(`--repeat-penalty ${v}`);}
+    if(on('reasoning_budget')){const v=document.getElementById('reasoning_budget').value;if(v!=='')cmd.push(`--reasoning-budget ${v}`);}
+    if(caps.flags.reasoning_effort && on('reasoning_effort')){const v=document.getElementById('reasoning_effort').value;if(v)cmd.push(`--reasoning-effort ${v}`);}
+  }
+
+  // Misc flags
+  if(caps.flags.lv4 && document.getElementById('lv4').checked)cmd.push('-lv 4');
+  if(document.getElementById('mcp_proxy').checked)cmd.push('--ui-mcp-proxy');
+
+  // Extra params
+  const ex=document.getElementById('extra_params').value.trim();if(ex)cmd.push(ex);
+
+  document.getElementById('out').value=cmd.join(' ');
+}
+
+// ── COPY (with WebKitGTK / QtWebEngine fallback) ──
+// Qt WebEngine (the Windows pywebview backend) exposes navigator.clipboard
+// but writeText() can crash the web engine process (window closes to
+// desktop), so always use the execCommand fallback there.
+const IS_QTWEBENGINE = /QtWebEngine|Qt\//.test(navigator.userAgent);
+function copyCmd(){
+  const text = document.getElementById('out').value;
+  if (!IS_QTWEBENGINE && navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch(e){}
+  document.body.removeChild(ta);
+}
+
+// ── CONTEXT MENU on #out ──
+(function setupContextMenu(){
+  const out = document.getElementById('out');
+  const menu = document.getElementById('ctx-menu');
+  if (!out || !menu) return;
+
+  out.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    menu.classList.remove('hidden');
+    const x = Math.min(e.clientX, window.innerWidth - 210);
+    const y = Math.min(e.clientY, window.innerHeight - 90);
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+  });
+
+  document.addEventListener('click', e => {
+    if (!menu.contains(e.target)) menu.classList.add('hidden');
+  });
+
+  window.addEventListener('blur', () => menu.classList.add('hidden'));
+})();
+
+function ctxCopy(){
+  document.getElementById('ctx-menu').classList.add('hidden');
+  copyCmd();
+}
+function ctxSelectAll(){
+  document.getElementById('ctx-menu').classList.add('hidden');
+  const out = document.getElementById('out');
+  out.focus();
+  out.select();
+}
+</script>
+</body>
+</html>

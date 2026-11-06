@@ -1,0 +1,9 @@
+# Windows dependencies for the Llama.cpp / ik_llama launcher.
+#
+# GTK (PyGObject / pycairo) is not packaged for Windows, so on Windows the
+# GUI falls back to Qt WebEngine (see app.py: gui='qt'). Everything else is
+# the same as requirements.txt.
+fastapi>=0.115
+uvicorn>=0.34
+pydantic>=2.9
+pywebview[qt]>=6.2

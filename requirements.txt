@@ -1,0 +1,6 @@
+fastapi>=0.115
+uvicorn>=0.34
+pydantic>=2.9
+pywebview>=6.2
+PyGObject>=3.50
+pycairo>=1.27

@@ -1,0 +1,25 @@
+{
+  "model_dirs": [
+    "/path/to/your/ggufs",
+    "/mnt/wherevercomfyuiis/ComfyUI/models/text_encoders",
+    ".cache/huggingface/hub"
+  ],
+  "backends": {
+    "llamacpp": {
+      "bin": "/home/yourusername/llama.cpp/build/bin",
+      "port": 8080
+    },
+    "ik_llama": {
+      "bin": "/home/yourusername/ik_llama.cpp/build/bin",
+      "port": 8081
+    }
+  },
+  "launch_options": {
+    "llamacpp": {
+      "moe_cache_mib": 0
+    },
+    "ik_llama": {
+      "jinja": false
+    }
+  }
+}

@@ -1,0 +1,54 @@
+[
+  {
+    "name": "Gemma_4",
+    "glob": "*gemma4*",
+    "params": {
+      "temp": 1,
+      "topk": 64,
+      "topp": 0.95,
+      "presence_penalty": 0,
+      "repeat_penalty": 0,
+      "reasoning_budget": 0,
+      "ctx": 16000,
+      "mem_mgmt": "manual"
+    }
+  },
+  {
+    "name": "gemma4",
+    "glob": "*gemma4*",
+    "params": {
+      "sampling": {
+        "temp": {
+          "on": true,
+          "v": 1
+        },
+        "topk": {
+          "on": true,
+          "v": 64
+        },
+        "topp": {
+          "on": true,
+          "v": 0.95
+        },
+        "presence": {
+          "on": false,
+          "v": 0
+        },
+        "repeat_pen": {
+          "on": false,
+          "v": 0
+        },
+        "reasoning_budget": {
+          "on": false,
+          "v": 0
+        },
+        "reasoning_effort": {
+          "on": false,
+          "v": ""
+        }
+      },
+      "ctx": 31000,
+      "mem_mgmt": "manual"
+    }
+  }
+]
